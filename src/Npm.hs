@@ -5,6 +5,8 @@
 
 module Npm
     ( doGetNpm,
+      makeEbuildS,
+      showNpmEbuild,
       Npm )
 where
 
@@ -22,7 +24,7 @@ data Npm = Npm {
         version :: String,
         description :: String,
         dependencies :: [(String, String)] }
-        --dependencies :: Maybe NpmDep }
+        deriving Show
 
 -- getNpmUrl - Returns the URL to query the NPM registry.
 getNpmUrl :: String -> String -> String
@@ -86,7 +88,9 @@ makeNpm :: String -> Maybe Npm
 makeNpm s = makeNpm' $ decode s
     where
         makeNpm':: Result (JSObject JSValue) -> Maybe Npm
-        makeNpm' (Ok x) = Just (buildNpm x)
+        makeNpm' (Ok x) = let a = (buildNpm x) in 
+                                if (name a) == "" then Nothing
+                                else Just a
         makeNpm' _ = Nothing
 
         getString (Ok s) = fromJSString s
@@ -108,3 +112,4 @@ makeNpm s = makeNpm' $ decode s
             version = getString $ valFromObj "version" x,
             description = getString $ valFromObj "description" x,
             dependencies = getDepends $ valFromObj "dependencies" x }
+
