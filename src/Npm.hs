@@ -12,6 +12,7 @@ where
 
 import Text.JSON
 import Network.HTTP
+import Data.List
 
 -- Test Data
 jsStr :: String
@@ -48,13 +49,14 @@ doGetNpmDeps f = fmap doGetNpmDeps' f
 
 --}
 --
+{--
 makeEbuild :: IO (Maybe Npm) -> IO (String)
 makeEbuild n = fmap doEbuild n
     where
         doEbuild :: Maybe Npm -> String
         doEbuild (Just n) = show $ (name n) ++ (version n)
         doEbuild Nothing = ""
-
+--}
 makeEbuildS :: Maybe Npm -> String
 makeEbuildS n = doEbuildS n
     where
@@ -78,8 +80,13 @@ showNpmEbuild n = "# Copyright 1999-2013 Gentoo Foundation" ++ "\n" ++
                   "KEYWORDS=\"~amd64 ~x86\"" ++ "\n" ++
                   "IUSE=\"\"" ++ "\n" ++
                   "DEPEND=\">=net-libs/nodejs-0.8.10\"" ++ "\n" ++
-                  "RDEPEND=\"${DEPEND}\"" ++ "\n"
+                  "RDEPEND=\"" ++ depStrings n ++
+                  "\n\t${DEPEND}\"" ++ "\n"
 
+depStrings :: Npm -> String
+depStrings pkg = concat $ 
+                    intersperse "\n\t" $ 
+                        map (\(x, y) -> ">=dev-nodejs/" ++ x ++ "-" ++ (tail y)) $ dependencies pkg
 
 --
 -- Converts the resulting JSON from querying the NPM Registry,

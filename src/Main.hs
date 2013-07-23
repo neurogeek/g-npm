@@ -53,6 +53,7 @@ main = do
     pkg <- doGetNpm (optPkgName opts') (optPkgVersion opts')
 
     case pkg of
-        Nothing -> ioError (userError ("Package " ++ (optPkgName opts') ++ " not found."))
+        Nothing -> ioError (userError ("Package " ++ (optPkgName opts') ++ 
+            " not found."))
         Just pkg -> putStrLn $ (showNpmEbuild pkg)
 
