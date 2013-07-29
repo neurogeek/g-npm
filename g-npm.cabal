@@ -1,5 +1,5 @@
 Name:                g-npm
-Version:             0.0.2
+Version:             0.1.0
 Description:         Generate Gentoo ebuilds from NodeJS/npm packages.
 License:             MIT
 License-file:        LICENSE

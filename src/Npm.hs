@@ -86,7 +86,12 @@ showNpmEbuild n = "# Copyright 1999-2013 Gentoo Foundation" ++ "\n" ++
 depStrings :: Npm -> String
 depStrings pkg = concat $ 
                     intersperse "\n\t" $ 
-                        map (\(x, y) -> ">=dev-nodejs/" ++ x ++ "-" ++ (tail y)) $ dependencies pkg
+                        map (\(x, y) -> ">=dev-nodejs/" ++ x ++ "-" ++ (cleanVersion y)) $ dependencies pkg
+                where
+                    cleanVersion :: String -> String
+                    cleanVersion n 
+                            | head n == '~' = tail n
+                            | otherwise = n
 
 --
 -- Converts the resulting JSON from querying the NPM Registry,

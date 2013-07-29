@@ -5,7 +5,12 @@ import Npm( doGetNpm, makeEbuildS, showNpmEbuild )
 import Control.Monad
 import System.Environment
 import System.Console.GetOpt
+import System.Directory
 
+
+-- Default category
+nodeCat :: String
+nodeCat = "dev-nodejs"
 -- Flag type for Options
 data Flag = NoDeps 
         | PkgName String
@@ -22,7 +27,7 @@ data Options = Options { optNoDeps :: Bool
 
 -- Default options
 startOptions = Options { optNoDeps = False
-                , optOverlay = "" 
+                , optOverlay = "/tmp/node-overlay" 
                 , optPkgName = ""
                 , optPkgVersion = "" }
                 
@@ -43,6 +48,20 @@ parseArgs args =
         (_,_,errs) -> ioError (userError (concat errs ++ usageInfo header options))
             where header = "Usage: g-npm [OPTION...]"
 
+-- checkOverlay
+-- Verifies if the Overlay path exists. Else, it creates it and 
+-- creates subfolders for dev-nodejs category.
+checkOverlay :: FilePath -> IO ()
+checkOverlay o = 
+        createDirectoryIfMissing True o
+
+buildEbuildPath :: String -> String -> String -> FilePath
+buildEbuildPath o n v =
+    (o ++ "/" ++ nodeCat ++ "/" ++ n ++ "/" ++ (buildPkgName n v))
+
+buildPkgName :: String -> String -> String
+buildPkgName n v = n ++ "-" ++ v ++ ".ebuild"
+
 -- Main
 main :: IO ()
 main = do
@@ -50,10 +69,14 @@ main = do
     (opts, non_opts) <- parseArgs args
     opts' <- foldl (>>=) (return startOptions) opts
 
-    pkg <- doGetNpm (optPkgName opts') (optPkgVersion opts')
+    let n = (optPkgName opts')
+    let v = (optPkgVersion opts')
+    let o = (optOverlay opts')
+
+    pkg <- doGetNpm n v
+    checkOverlay (o ++ "/" ++ nodeCat ++ "/" ++ n)
 
     case pkg of
-        Nothing -> ioError (userError ("Package " ++ (optPkgName opts') ++ 
+        Nothing -> ioError (userError ("Package " ++ n ++ 
             " not found."))
-        Just pkg -> putStrLn $ (showNpmEbuild pkg)
-
+        Just pkg -> writeFile (buildEbuildPath o n v) (showNpmEbuild pkg)
