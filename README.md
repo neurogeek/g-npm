@@ -4,6 +4,12 @@ g-npm
 Tool to create ebuild from npm packages.
 *Update: The g-npm project now has limited functionality. It is now possible to create an ebuild using the tool. Still much work is required.*
 
+Build Status
+------------
+
+Travis-CI: [![Build Status](https://travis-ci.org/neurogeek/g-npm.png?branch=master)](https://travis-ci.org/neurogeek/g-npm)
+
+
 Installing
 ----------
 
