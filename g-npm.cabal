@@ -22,6 +22,7 @@ Executable g-npm
   Build-Depends:     
     base >= 3 && < 5,
     HTTP >= 4000.2,
+    directory >= 1.1.0.1,
     json
 
   Other-modules:
