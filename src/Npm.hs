@@ -4,10 +4,11 @@
  -  Author: Jesus Rivero <neurogeek@gentoo.org> --}
 
 module Npm
-    ( doGetNpm,
+    ( cleanVersion,
+      doGetNpm,
       makeEbuildS,
       showNpmEbuild,
-      Npm )
+      Npm (dependencies) )
 where
 
 import Text.JSON
@@ -71,7 +72,7 @@ showNpmEbuild n = "# Copyright 1999-2013 Gentoo Foundation" ++ "\n" ++
                   "\n" ++
                   "EAPI=5" ++ "\n" ++
                   "\n" ++
-                  "inherit multilib npm" ++ "\n" ++
+                  "inherit npm" ++ "\n" ++
                   "\n" ++
                   "DESCRIPTION=\"" ++ description n ++ "\"\n" ++
                   "\n" ++
@@ -79,19 +80,19 @@ showNpmEbuild n = "# Copyright 1999-2013 Gentoo Foundation" ++ "\n" ++
                   "SLOT=\"0\"" ++ "\n" ++
                   "KEYWORDS=\"~amd64 ~x86\"" ++ "\n" ++
                   "IUSE=\"\"" ++ "\n" ++
-                  "DEPEND=\">=net-libs/nodejs-0.8.10\"" ++ "\n" ++
-                  "RDEPEND=\"" ++ depStrings n ++
+                  "DEPEND=\"\"" ++ "\n" ++
+                  "RDEPEND=\">=net-libs/nodejs-0.8.10\n\t" ++ depStrings n ++
                   "\n\t${DEPEND}\"" ++ "\n"
+
+cleanVersion :: String -> String
+cleanVersion n 
+        | head n == '~' = tail n
+        | otherwise = n
 
 depStrings :: Npm -> String
 depStrings pkg = concat $ 
                     intersperse "\n\t" $ 
                         map (\(x, y) -> ">=dev-nodejs/" ++ x ++ "-" ++ (cleanVersion y)) $ dependencies pkg
-                where
-                    cleanVersion :: String -> String
-                    cleanVersion n 
-                            | head n == '~' = tail n
-                            | otherwise = n
 
 --
 -- Converts the resulting JSON from querying the NPM Registry,

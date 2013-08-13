@@ -1,7 +1,7 @@
 module Main 
 where
 
-import Npm( doGetNpm, makeEbuildS, showNpmEbuild )
+import Npm( Npm (..), cleanVersion, doGetNpm, makeEbuildS, showNpmEbuild )
 import Control.Monad
 import System.Environment
 import System.Console.GetOpt
@@ -62,6 +62,16 @@ buildEbuildPath o n v =
 buildPkgName :: String -> String -> String
 buildPkgName n v = n ++ "-" ++ v ++ ".ebuild"
 
+createPkg :: String -> String -> String -> IO (Npm)
+createPkg o n v = do 
+        pkg <- doGetNpm n v
+        case pkg of
+            Nothing -> ioError (userError ("Package " ++ n ++ 
+                " not found."))
+            Just pkg -> (putStrLn $ "Creating pkg: " ++ nodeCat ++ "/" ++ n) >> 
+                            checkOverlay (o ++ "/" ++ nodeCat ++ "/" ++ n) >> 
+                            writeFile (buildEbuildPath o n (cleanVersion v)) (showNpmEbuild pkg) >> 
+                            return pkg
 -- Main
 main :: IO ()
 main = do
@@ -73,10 +83,5 @@ main = do
     let v = (optPkgVersion opts')
     let o = (optOverlay opts')
 
-    pkg <- doGetNpm n v
-    checkOverlay (o ++ "/" ++ nodeCat ++ "/" ++ n)
-
-    case pkg of
-        Nothing -> ioError (userError ("Package " ++ n ++ 
-            " not found."))
-        Just pkg -> writeFile (buildEbuildPath o n v) (showNpmEbuild pkg)
+    pkg <- createPkg o n v
+    mapM_ (\(n, v) -> createPkg o n v) $ dependencies pkg
